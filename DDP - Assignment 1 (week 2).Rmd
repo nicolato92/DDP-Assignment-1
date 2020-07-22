@@ -1,0 +1,51 @@
+---
+title: "Map of infected by Covid-19 in Santiago, Chile"
+author: "Nicolas Lara Torres"
+date: "22 de julio de 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Brief description
+
+The following map shows the active cases for 10 municipalities of the city of Santiago. The size and color of the circles is related to the number of cases.
+
+In addition, if you zoom in on the map, you can see the engineering faculty of the "Universidad de Chile", framed in a rectangle.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
+library(leaflet)
+library(Hmisc)
+pop=c(865,553,344,206,230,543,147,223,689,220)
+cutcol<-paste(as.character(cut2(pop, g=3)))
+cutcol[which(paste(as.character(cutcol))=="[553,865]")]<-"red"
+cutcol[which(paste(as.character(cutcol))=="[230,553)")]<-"yellow"
+cutcol[which(paste(as.character(cutcol))=="[147,230)")]<-"green"
+df<-data.frame(comunas=c("Puente Alto","La Florida","La Pintana","Macul",
+          "Nunoa","Stgo Centro","Providencia","Independencia",
+          "Maipu","Las Condes"),
+          sick=pop,
+          lat=c(-33.6095279,-33.5209761,-33.5849811,-33.4919426,
+                -33.4543304,-33.4377968,-33.4288379,-33.4164118,
+                -33.5094409,-33.4160275),
+          lng=c(-70.5754736,-70.5995098,-70.6296444,-70.5997322,
+                -70.600582,-70.6504451,-70.6113373,-70.665818,
+                -70.756182,-70.5947693),
+          col=cutcol,
+          stringsAsFactors = FALSE)
+
+df%>%
+    leaflet() %>%
+    addTiles() %>%
+    addRectangles(lat1=-33.457214, lng1 = -70.664108,
+              lat2=-33.458557, lng2=-70.664902,
+              color="naive",
+              label="FCFM, Universidad de Chile") %>%
+    addCircles(weight=1, radius=sqrt(df$sick)*100, color=df$col, 
+               fillOpacity = 0.5,
+               label=paste(df$comunas, "-", "Acitve Cases:",df$sick)) %>%
+    addLegend(labels=c("B","M","A"), colors=c("green","yellow","red"))
+```
+
